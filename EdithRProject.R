@@ -14,6 +14,7 @@ surveys <- read.csv('data/portal_data_joined.csv')
 str(surveys)
 
 # Look at the survey data and the number of values for each species
+Tally <- surveys %>%
   group_by(species) %>%
   tally
 
@@ -32,6 +33,28 @@ weight <- merriami %>%
 ggplot(data = weight, aes(x=species)) + geom_histogram()
 
 # Create an object to compare weights of males and females
+Sex <- merriami %>%
+  group_by(sex) %>%
+  tally
+
+# Create 2 objects looking at male weight and female weight to exclude the unkown values
+Sex_male <- merriami %>%
+  filter(sex == "M") %>%
+  select(species, sex, weight) %>%
+  filter(!is.na(weight))
+
+Sex_female <- merriami %>%
+  filter(sex == "F") %>%
+  select(species, sex, weight) %>%
+  filter(!is.na(weight))
+
+#sexed <- surveys %.%
+  #filter(!sex == "")
+# Combine the two data sets together.
+SexCombined <- rbind(Sex_female, Sex_male)
+
+# Boxplot comparing weights of males and females
+ggplot(data = SexCombined, aes(x=species, y=weight , fill=sex)) + geom_boxplot()
 
 # Devise and implement stats and figures for this data
 # Figures
@@ -50,13 +73,20 @@ ggplot(data = weight, aes(x=species)) + geom_histogram()
 
 # Relationship between avg species weight and year
 
+#
+WeightYear <- merriami %>%
+  select(year, weight) %>%
+  filter(!is.na(weight))
 
+Avg <- aggregate(WeightYear$weight, list(year = WeightYear$year), mean)
 
-WeightYear <- surveys %>% 
-  select(species, sex, weight) %>%
-  group_by(species) %>%
-  group_by(sex) %>%
-  filter(!is.na(weight)) %>%
-  filter(!is.na(sex))
-  
-ggplot(data=surveys, aes(x=species, y= weight)) + geom_boxplot()
+ggplot(data=Avg, aes(x=year, y= x)) + geom_point()
+
+JD1 <- surveys %>%
+  select(species, hindfoot_length) %>%
+  filter(!is.na(hindfoot_length))
+
+Avg2 <- aggregate(JD1$hindfoot_length, list(species = JD1$species), mean)
+ggplot(data=Avg2, aes(x=species, y= x)) + geom_bar
+
+ggplot(data=Avg2, aes(x=species, y=x , fill=species)) + geom_bar(stat="identity")
