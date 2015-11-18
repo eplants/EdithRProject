@@ -29,64 +29,39 @@ weight <- merriami %>%
   select(species, weight) %>%
   filter(!is.na(weight)) 
 
-# Create a histogram looking at the distribution of weight
-ggplot(data = weight, aes(x=species)) + geom_histogram()
+# Option 1 Create a histogram looking at the distribution of weight
+ggplot(data = weight, aes(x=weight)) + geom_histogram(binwidth=1)
+
+# Option 2, in case option 1 does not work
+qplot(weight, data = weight, ylab= "Frequency", xlab="Weight", binwidth = 1, geom="histogram")
 
 # Create an object to compare weights of males and females
 Sex <- merriami %>%
   group_by(sex) %>%
   tally
 
-# Create 2 objects looking at male weight and female weight to exclude the unkown values
-Sex_male <- merriami %>%
-  filter(sex == "M") %>%
+# Create an object looking at male weight and female weight to exclude the unkown values
+Sex_comparison <- merriami %>%
+  filter(!sex == "") %>%
   select(species, sex, weight) %>%
   filter(!is.na(weight))
 
-Sex_female <- merriami %>%
-  filter(sex == "F") %>%
-  select(species, sex, weight) %>%
-  filter(!is.na(weight))
-
-#sexed <- surveys %.%
-  #filter(!sex == "")
-# Combine the two data sets together.
-SexCombined <- rbind(Sex_female, Sex_male)
+# Run t-test to see if there is a difference between the mean weight of sexes
+t.test(weight ~ sex, data=Sex_comparison)
 
 # Boxplot comparing weights of males and females
-ggplot(data = SexCombined, aes(x=species, y=weight , fill=sex)) + geom_boxplot()
+ggplot(data = Sex_comparison, aes(x=species, y=weight , fill=sex)) + geom_boxplot()
 
-# Devise and implement stats and figures for this data
-# Figures
-  # TAXA
-  # Relationship sex and weight by species?
-  # Avg Species weight versus year?   
-  # Avg Hindfoot length vs avg weight by species
-  # Hindfoot length vs sex by species
-  # Distribution male/ female weight
-  
-# relationship  point, line
-# Distr.   histogram, bar
-# Comparison among items, over time    bar, boxplot, line
-
-# Export figures
-
-# Relationship between avg species weight and year
-
-#
+# Create an object to look at Weight over time
 WeightYear <- merriami %>%
   select(year, weight) %>%
   filter(!is.na(weight))
 
+# Find the average weight of the species each year
 Avg <- aggregate(WeightYear$weight, list(year = WeightYear$year), mean)
 
-ggplot(data=Avg, aes(x=year, y= x)) + geom_point()
+# Create a scatterplot to look at the mean weight per year and create a Add linear regression line that includes 95% confidence region
+pdf("figures/scatterplot.pdf")
+ggplot(data=Avg, aes(x=year, y= x)) + geom_point() + geom_smooth(method=lm) + ylab("Mean Weight (g)") + xlab("Year")
+dev.off()
 
-JD1 <- surveys %>%
-  select(species, hindfoot_length) %>%
-  filter(!is.na(hindfoot_length))
-
-Avg2 <- aggregate(JD1$hindfoot_length, list(species = JD1$species), mean)
-ggplot(data=Avg2, aes(x=species, y= x)) + geom_bar
-
-ggplot(data=Avg2, aes(x=species, y=x , fill=species)) + geom_bar(stat="identity")
