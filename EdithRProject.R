@@ -25,15 +25,20 @@ merriami <- surveys %>%
   select(genus, species, year, sex, hindfoot_length, weight)
 
 # Create an object to look at the distribution of weight 
-weight <- merriami %>%
+Weight <- merriami %>%
   select(species, weight) %>%
   filter(!is.na(weight)) 
 
 # Option 1 Create a histogram looking at the distribution of weight
-ggplot(data = weight, aes(x=weight)) + geom_histogram(binwidth=1)
+# Also saves the figure as a pdf
+pdf("figures/scatterplot.pdf")
+ggplot(data = Weight, aes(x=weight)) + geom_histogram(aes(fill = ..count..),binwidth=1) + scale_fill_gradient("Count", low = "#ff0099", high = "#9900cc") + theme_bw() + ylab("Frequency") + xlab("Weight(g)") + scale_x_continuous(breaks=seq(0,100,5)) + scale_y_continuous(breaks=seq(0,800,100)) + ggtitle("Distribution of weight within D.merriami") + theme(plot.title = element_text(lineheight=.8, face="bold"))
+dev.off()
 
 # Option 2, in case option 1 does not work
+pdf("figures/scatterplot.pdf")
 qplot(weight, data = weight, ylab= "Frequency", xlab="Weight", binwidth = 1, geom="histogram")
+dev.off()
 
 # Create an object to compare weights of males and females
 Sex <- merriami %>%
@@ -50,7 +55,10 @@ Sex_comparison <- merriami %>%
 t.test(weight ~ sex, data=Sex_comparison)
 
 # Boxplot comparing weights of males and females
-ggplot(data = Sex_comparison, aes(x=species, y=weight , fill=sex)) + geom_boxplot()
+# Also saves the figure as a pdf
+pdf("figures/scatterplot.pdf")
+ggplot(data = Sex_comparison, aes(x=species, y=weight , fill=sex)) + geom_boxplot() + scale_fill_manual(values=c("#ff0099", "#0099ff")) + theme_bw() + ylab("Weight (g)") + xlab("Species") + ggtitle("Comparison of weights between male and female D. merriami") + theme(plot.title = element_text(lineheight=.8, face="bold"))
+dev.off()
 
 # Create an object to look at Weight over time
 WeightYear <- merriami %>%
@@ -61,7 +69,8 @@ WeightYear <- merriami %>%
 Avg <- aggregate(WeightYear$weight, list(year = WeightYear$year), mean)
 
 # Create a scatterplot to look at the mean weight per year and create a Add linear regression line that includes 95% confidence region
+# Also saves the figure as a pdf
 pdf("figures/scatterplot.pdf")
-ggplot(data=Avg, aes(x=year, y= x)) + geom_point() + geom_smooth(method=lm) + ylab("Mean Weight (g)") + xlab("Year")
+ggplot(data=Avg, aes(x=year, y= x)) + geom_point(shape=8,size=5, colour="#9900cc") + geom_smooth(method=lm, colour="#9900cc") + ylab("Mean Weight (g)") + xlab("Year") + theme_bw()
 dev.off()
 
